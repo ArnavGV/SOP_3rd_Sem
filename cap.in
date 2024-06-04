@@ -1,0 +1,157 @@
+go devedit
+work.area x1=0 y1=-0.1 x2=3.5 y2=10
+
+region reg=1 mat=GaN color=0xcba2a2 pattern=0xd \
+	polygon="0.75,0.65 1.25,0.65 1.25,0 0.75,0"
+#
+impurity id=1 region.id=1 imp=Donors \
+	peak.value=5e+16 ref.value=1000000000000 comb.func=Multiply
+#
+constr.mesh region=1 default max.height=10
+
+
+region reg=2 name=anode mat=Platinum elec.id=1 work.func=0 color=0xfefefe pattern=0xe \
+	polygon="0.8,0 0.8,-0.45 1,-0.45 1,0"
+#
+constr.mesh region=2 default
+
+region reg=3 name=cathode mat=Titanium elec.id=2 work.func=0 color=0xfefe95 pattern=0xd \
+	polygon="1.55,0.285 1.75,0.285 1.75,0.65 1.55,0.65"
+#
+constr.mesh region=3 default
+
+region reg=4 mat=GaN color=0xa2a2a2 pattern=0xd \
+	polygon="0.75,0.65 1.25,0.65 1.55,0.65 1.75,0.65 1.75,1.75 0.75,1.75"
+#
+impurity id=2 region.id=4 imp=Donors \
+	peak.value=1e+19 ref.value=1000000000000 comb.func=Multiply
+#
+constr.mesh region=4 default max.height=10
+
+region reg=5 mat=GaN color=0xcba2a2 pattern=0xd \
+	polygon="0,1.75 0.5,1.75 0.75,1.75 1.75,1.75 2.25,1.75 2.75,1.75 2.75,3.75 0,3.75"
+#
+constr.mesh region=5 default max.height=10
+
+region reg=6 mat=Sapphire color=0xcb pattern=0xa \
+	polygon="0,3.75 2.75,3.75 2.75,8 0,8"
+#
+constr.mesh region=6 default max.height=10
+
+region reg=7 name=pad1 mat=Gold elec.id=3 work.func=0 color=0xfefe95 pattern=0xd \
+	polygon="0,0.95 0.5,0.95 0.5,1.75 0,1.75"
+#
+constr.mesh region=7 default max.height=10
+
+
+region reg=8 name=pad2 mat=Gold elec.id=3 work.func=0 color=0xfefe95 pattern=0xd \
+	polygon="2.25,0.95 2.75,0.95 2.75,1.75 2.25,1.75"
+#
+constr.mesh region=8 default max.height=10
+
+region reg=9 name=bridge1 mat=Titanium elec.id=2 work.func=0 color=0xfefe95 pattern=0xd \
+	polygon="0.499,0.95 0.499,-0.45 0.8,-0.45 0.8,-0.44 0.5,-0.44 0.5,0.95"
+#
+constr.mesh region=9 default max.height=10
+
+region reg=10 name=bridge2 mat=Titanium elec.id=2 work.func=0 color=0xfefe95 pattern=0xd \
+	polygon="1.75,0.285 2.251,0.285 2.251,0.95 2.25,0.95 2.25,0.295 1.75,0.295"
+#
+constr.mesh region=10 default max.height=10
+
+# Set meshing Parameters
+#
+base.mesh height=2 width=0.5
+#
+bound.cond !apply max.slope=30 max.ratio=100 rnd.unit=0.001 line.straightening=1 align.Points when=automatic
+#
+imp.refine min.spacing=0.02
+#
+constr.mesh max.angle=90 max.ratio=300 max.height=1000 \
+	max.width=1000 min.height=0.0001 min.width=0.0001
+#
+constr.mesh type=Semiconductor default
+#
+constr.mesh type=Insulator default
+#
+constr.mesh type=Metal default
+#
+constr.mesh type=Other default
+#
+constr.mesh region=1 default
+#
+constr.mesh region=2 default
+#
+constr.mesh region=3 default
+#
+constr.mesh region=4 default
+#
+constr.mesh region=5 default
+#
+constr.mesh region=6 default
+#
+constr.mesh region=7 default
+#
+constr.mesh region=8 default
+#
+constr.mesh region=9 default
+#
+constr.mesh region=10 default
+#
+
+
+constr.mesh id=4 x1=0 y1=-0.4 x2=4 y2=4 default max.height=0.05
+Mesh Mode=MeshBuild
+
+base.mesh height=2 width=0.05
+
+bound.cond !apply max.slope=30 max.ratio=100 rnd.unit=0.001 line.straightening=1 align.Points when=automatic
+
+structure outfile=thz.str
+
+go atlas
+#
+# 2D str by devedit
+# Expand 10 times to x-dir
+mesh infile=thz.str scale.x=10
+#
+save outf=thz0.str
+#
+go atlas
+set volt=-3
+## MESH GENERATION
+mesh infile=thz0.str width=477
+
+## REGIONS AND ELECTRODES
+region num=1 modify material=GaN substrate
+contact name=anode workf=5.65 pipinys surf.rec me.tunnel=0.222
+
+## MATERIAL MODELS
+material material=GaN align=0.68 eab=0.16 \
+	taun0=1e-9 taup0=2e-8 nsrhn=4e18 nsrhp=4e18 \
+	d.tunnel=4e-6 me.sbt=0.20 mh.sbt=0.20 \
+	augn=1e-31 augp=1e-31 arichn=26 \
+	pip.nt=1.5e13 pip.et=0.8 pip.acc=2.0 pip.omega=0.07
+
+ mobility material=GaN gansat.n
+
+models k.p fermi incomplete consrh auger optr print
+
+#
+
+## OUTPUT FLAGS AND METHOD
+output band.temp con.band val.band band.param charge polar.charge e.mobility \
+	h.mobility u.srh u.radiative u.auger permi flowlines
+#
+method newton maxtrap=10 CARR=2
+#
+solve init
+solve
+solve vanode=0.1
+solve vanode=0.2
+solve name=anode vstep=-0.1  vfinal=-4.0
+log outfile=thzrev_volt_$"volt".log y.params inport=anode outport=cathode width=50
+
+solve ac freq=1e10 fstep=10e9 nfstep=10
+##
+quit

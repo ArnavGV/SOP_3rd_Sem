@@ -1,0 +1,16 @@
+# (c) Silvaco Inc., 2019
+go internal
+
+load infile="THz SBD - Rev.in"
+
+
+
+sweep parameter=temp type=list data="125, 150, 200, 250, 300, 350, 400"
+
+save type=sdb outf=thzrev.dat
+
+tonyplot thzrev_1.str thzrev_temp_300.log
+
+tonyplot -overlay thzrev_temp_125.log thzrev_temp_150.log thzrev_temp_200.log thzrev_temp_250.log thzrev_temp_300.log thzrev_temp_350.log thzrev_temp_400.log
+
+tonyplot thzrev_1.dat

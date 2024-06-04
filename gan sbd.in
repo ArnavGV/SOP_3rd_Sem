@@ -1,0 +1,138 @@
+  go devedit
+work.area x1=0 y1=-0.1 x2=3.5 y2=10
+
+region reg=1 mat=GaN color=0xcba2a2 pattern=0xd \
+	polygon="1.85,2 1.95,2 3.45,2 3.5,2 3.5,4 0,4 0,0 0.15,0 1.75,0 1.85,0"
+#
+impurity id=1 region.id=1 imp=Donors \
+	peak.value=1e+17 ref.value=1000000000000 comb.func=Multiply
+#
+constr.mesh region=1 default max.height=10
+
+
+region reg=2 name=anode mat=Titanium elec.id=1 work.func=0 color=0xfefefe pattern=0xe \
+	polygon="0.15,0 0.15,-0.1 1.75,-0.1 1.75,0"
+#
+constr.mesh region=2 default
+
+region reg=3 name=cathode mat=Tin elec.id=2 work.func=0 color=0xfefe95 pattern=0xd \
+	polygon="1.95,2 1.95,1.9 3.45,1.9 3.45,2"
+#
+constr.mesh region=3 default
+
+region reg=4 mat=Sapphire color=0xcb pattern=0xa \
+	polygon="0,4 3.5,4 3.5,10 0,10"
+#
+constr.mesh region=4 default max.height=10
+
+# Set meshing Parameters
+#
+base.mesh height=2 width=0.5
+#
+bound.cond !apply max.slope=30 max.ratio=100 rnd.unit=0.001 line.straightening=1 align.Points when=automatic
+#
+imp.refine min.spacing=0.02
+#
+constr.mesh max.angle=90 max.ratio=300 max.height=1000 \
+	max.width=1000 min.height=0.0001 min.width=0.0001
+#
+#constr.mesh type=Semiconductor default
+#
+#constr.mesh type=Insulator default
+#
+#constr.mesh type=Metal default
+#
+#constr.mesh type=Other default
+#
+#Constr.mesh region=1 default
+#
+#constr.mesh region=2 default
+#
+#constr.mesh region=3 default
+#
+#constr.mesh region=4 default
+#
+
+constr.mesh id=1 x1=0 y1=-0.1 x2=1.85 y2=1 default max.height=0.02
+constr.mesh id=2 x1=0 y1=0.599 x2=1.85 y2=0.604 default max.height=0.05
+constr.mesh id=3 x1=0 y1=0.649 x2=1.85 y2=0.651 default max.height=0.01
+constr.mesh id=4 x1=1.7 y1=0 x2=2 y2=3 default max.height=0.05
+constr.mesh id=5 x1=1.8 y1=1.9 x2=3.5 y2=2.5 default max.height=0.02
+constr.mesh id=6 x1=0 y1=3.99 x2=4 y2=4.01 default max.height=0.1
+Mesh Mode=MeshBuild
+
+#base.mesh height=2 width=0.05
+
+bound.cond !apply max.slope=30 max.ratio=100 rnd.unit=0.001 line.straightening=1 align.Points when=automatic
+
+structure outfile=gan_ex.str
+
+go atlas
+#
+# 2D str by devedit
+# Expand 10 times to x-dir
+mesh infile=gan_ex.str scale.x=100
+#
+save outf=gan_ex_0.str
+#
+go atlas
+
+## MESH GENERATION
+# Chip size=350um x 350um
+# Etching Width = 185um
+# Etching Depth=2um
+mesh infile=gan_ex_0.str width=477
+
+## REGIONS AND ELECTRODES
+#region num=1 modify material=GaN substrate
+contact name=anode workf=5.5
+
+## MATERIAL MODELS
+material material=GaN taun=1e-9 taup=1e-9 copt=1.1e-8 \
+	augn=1.0e-34 augp=1.0e-34
+
+
+#Lorenz broaden factor
+material well.gamma0=30e-3
+#
+
+#
+material ndx.adachi
+
+#
+models k.p fermi incomplete consrh auger optr print
+impact selb
+
+#
+mobility mup=10
+mobility fmct.n gansat.n
+#
+
+## OUTPUT FLAGS AND METHOD
+## INITIAL SOLUTION
+method newton climit=1e-4 maxtrap=10
+solve init
+output band.temp con.band val.band band.param charge polar.charge e.mobility \
+	h.mobility u.srh u.radiative u.auger permi flowlines
+#
+
+#
+
+save outf=gan_ex_1.str
+#
+tonyplot gan_ex_1.str
+
+## PLOTTING CURVES
+
+curvetrace end.val=1e-4 contr.name=anode mincur=1e-3 nextst.ratio=1.02 step.init=0.02
+log outf=gan_ex_4p5.log
+solve curvetrace
+tonyplot gan_ex_4p5.log
+
+
+#V-I curves
+#tonyplot gan_ex.log	-set gan_ex_0.set
+
+##
+
+quit

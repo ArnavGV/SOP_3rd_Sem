@@ -1,0 +1,12 @@
+go internal
+load infile="THz SBD.in"
+sweep parameter=temp type=list data="125, 150, 200, 250, 300, 350, 400"
+
+save type=sdb outfile=thz_1.dat
+
+tonyplot thz_1.str thz_temp_300.log
+
+tonyplot -overlay thz_temp_125.log thz_temp_150.log thz_temp_200.log thz_temp_250.log thz_temp_300.log thz_temp_350.log thz_temp_400.log 
+
+tonyplot thz_1.dat
+##
